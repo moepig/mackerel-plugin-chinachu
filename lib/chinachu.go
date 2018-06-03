@@ -20,22 +20,39 @@ type ChinachuPlugin struct {
 }
 
 type Status struct {
-	ConnectedCount int `json:"connectedCount"`
+	ConnectedCount int     `json:"connectedCount"`
+	Feature        feature `json:"feature"`
+}
+
+type feature struct {
+	Previewer    bool
+	Streamer     bool
+	Filer        bool
+	Configurator bool
 }
 
 var graphdef = map[string]mp.Graphs{
-	"chinachu.recording_count": mp.Graphs{
-		Label: "Recording Count",
+	"chinachu.connected_count": mp.Graphs{
+		Label: "Connected",
 		Unit:  "integer",
-		Metrics: [](mp.Metrics){
-			mp.Metrics{Name: "RecordingCount", Label: "RecordingCount", Type: "integer"},
+		Metrics: []mp.Metrics{
+			{Name: "connectedcount", Label: "Count", Type: "uint32"},
+		},
+	},
+	"chinachu.feature": mp.Graphs{
+		Label: "Feature",
+		Unit:  "integer",
+		Metrics: []mp.Metrics{
+			{Name: "previewer", Label: "Previewer", Type: "uint32"},
+			{Name: "streamer", Label: "Streamer", Type: "uint32"},
+			{Name: "filer", Label: "Filer", Type: "uint32"},
+			{Name: "configurator", Label: "Configurator", Type: "uint32"},
 		},
 	},
 }
 
 // FetchMetrics interface for mackerelplugin
 func (m ChinachuPlugin) FetchMetrics() (map[string]interface{}, error) {
-
 	url := fmt.Sprintf("http://%s/api/status.json", m.Target)
 	response, err := http.Get(url)
 	if err != nil {
@@ -51,9 +68,22 @@ func (m ChinachuPlugin) FetchMetrics() (map[string]interface{}, error) {
 	}
 
 	stat := make(map[string]interface{})
-	stat["recording_count"] = status.ConnectedCount
+
+	stat["connected_count"] = status.ConnectedCount
+
+	stat["previewer"] = Bool2Int(status.Feature.Previewer)
+	stat["streamer"] = Bool2Int(status.Feature.Streamer)
+	stat["filer"] = Bool2Int(status.Feature.Filer)
+	stat["configurator"] = Bool2Int(status.Feature.Configurator)
 
 	return stat, err
+}
+
+func Bool2Int(x bool) int {
+	if x {
+		return 1
+	}
+	return 0
 }
 
 // GraphDefinition interface for mackerelplugin

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 
 	mp "github.com/mackerelio/go-mackerel-plugin-helper"
 	"github.com/mackerelio/golib/logging"
@@ -103,26 +102,7 @@ func Bool2Int(x bool) int {
 
 // GraphDefinition interface for mackerelplugin
 func (m ChinachuPlugin) GraphDefinition() map[string](mp.Graphs) {
-	labelPrefix := strings.Title(m.MetricKeyPredix())
-	return map[string]mp.Graphs{
-		"connected_count": mp.Graphs{
-			Label: labelPrefix + "connected_count",
-			Unit:  "integer",
-			Metrics: []mp.Metrics{
-				{Name: "connected_count", Label: "Count", Diff: false, Type: "uint32"},
-			},
-		},
-		"feature": mp.Graphs{
-			Label: labelPrefix + "Feature",
-			Unit:  "integer",
-			Metrics: []mp.Metrics{
-				{Name: "previewer", Label: "Previewer", Diff: false, Type: "uint32"},
-				{Name: "streamer", Label: "Streamer", Diff: false, Type: "uint32"},
-				{Name: "filer", Label: "Filer", Diff: false, Type: "uint32"},
-				{Name: "configurator", Label: "Configurator", Diff: false, Type: "uint32"},
-			},
-		},
-	}
+	return graphdef
 }
 
 // MetricKeyPrefix interface for mackerelplugin

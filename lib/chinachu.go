@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	// "log"
 	"net/http"
 
@@ -69,7 +68,7 @@ func GetStatus(host string) (status, error) {
 	byteArray, _ := ioutil.ReadAll(response.Body)
 
 	if err := json.Unmarshal(byteArray, &s); err != nil {
-		log.Fatal(err)
+		return s, err
 	}
 
 	return s, err

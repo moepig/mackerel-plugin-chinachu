@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	mp "github.com/mackerelio/go-mackerel-plugin-helper"
 	"github.com/mackerelio/golib/logging"
@@ -15,11 +16,12 @@ import (
 var logger = logging.GetLogger("metrics.plugin.chinachu")
 
 type ChinachuPlugin struct {
+	Prefix   string
 	Target   string
 	Tempfile string
 }
 
-type Status struct {
+type status struct {
 	ConnectedCount int     `json:"connectedCount"`
 	Feature        feature `json:"feature"`
 }
@@ -33,50 +35,63 @@ type feature struct {
 
 var graphdef = map[string]mp.Graphs{
 	"chinachu.connected_count": mp.Graphs{
-		Label: "Connected",
+		Label: "Connected Count",
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
-			{Name: "connectedcount", Label: "Count", Type: "uint32"},
+			{Name: "ConnectedCount", Label: "Count", Diff: false, Type: "uint32"},
 		},
 	},
 	"chinachu.feature": mp.Graphs{
 		Label: "Feature",
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
-			{Name: "previewer", Label: "Previewer", Type: "uint32"},
-			{Name: "streamer", Label: "Streamer", Type: "uint32"},
-			{Name: "filer", Label: "Filer", Type: "uint32"},
-			{Name: "configurator", Label: "Configurator", Type: "uint32"},
+			{Name: "Previewer", Label: "Previewer", Diff: false, Type: "uint32"},
+			{Name: "Streamer", Label: "Streamer", Diff: false, Type: "uint32"},
+			{Name: "Filer", Label: "Filer", Diff: false, Type: "uint32"},
+			{Name: "Configurator", Label: "Configurator", Diff: false, Type: "uint32"},
 		},
 	},
 }
 
-// FetchMetrics interface for mackerelplugin
-func (m ChinachuPlugin) FetchMetrics() (map[string]interface{}, error) {
-	url := fmt.Sprintf("http://%s/api/status.json", m.Target)
+// GetStatus サーバー情報取得
+// https://github.com/Chinachu/Chinachu/wiki/REST-API#-status
+func GetStatus(host string) (status, error) {
+	url := fmt.Sprintf("http://%s/api/status.json", host)
+
+	var s status
 	response, err := http.Get(url)
+
 	if err != nil {
-		return nil, err
+		return s, err
 	}
 	defer response.Body.Close()
 
 	byteArray, _ := ioutil.ReadAll(response.Body)
 
-	var status Status
-	if err := json.Unmarshal(byteArray, &status); err != nil {
+	if err := json.Unmarshal(byteArray, &s); err != nil {
 		log.Fatal(err)
 	}
 
+	return s, err
+}
+
+// FetchMetrics interface for mackerelplugin
+func (m ChinachuPlugin) FetchMetrics() (map[string]interface{}, error) {
 	stat := make(map[string]interface{})
 
-	stat["connected_count"] = status.ConnectedCount
+	status, err := GetStatus(m.Target)
+	if err != nil {
+		return nil, err
+	}
 
-	stat["previewer"] = Bool2Int(status.Feature.Previewer)
-	stat["streamer"] = Bool2Int(status.Feature.Streamer)
-	stat["filer"] = Bool2Int(status.Feature.Filer)
-	stat["configurator"] = Bool2Int(status.Feature.Configurator)
+	stat["ConnectedCount"] = status.ConnectedCount
 
-	return stat, err
+	stat["Previewer"] = Bool2Int(status.Feature.Previewer)
+	stat["Streamer"] = Bool2Int(status.Feature.Streamer)
+	stat["Filer"] = Bool2Int(status.Feature.Filer)
+	stat["Configurator"] = Bool2Int(status.Feature.Configurator)
+
+	return stat, nil
 }
 
 func Bool2Int(x bool) int {
@@ -88,10 +103,38 @@ func Bool2Int(x bool) int {
 
 // GraphDefinition interface for mackerelplugin
 func (m ChinachuPlugin) GraphDefinition() map[string](mp.Graphs) {
-	return graphdef
+	labelPrefix := strings.Title(m.MetricKeyPredix())
+	return map[string]mp.Graphs{
+		"connected_count": mp.Graphs{
+			Label: labelPrefix + "connected_count",
+			Unit:  "integer",
+			Metrics: []mp.Metrics{
+				{Name: "connected_count", Label: "Count", Diff: false, Type: "uint32"},
+			},
+		},
+		"feature": mp.Graphs{
+			Label: labelPrefix + "Feature",
+			Unit:  "integer",
+			Metrics: []mp.Metrics{
+				{Name: "previewer", Label: "Previewer", Diff: false, Type: "uint32"},
+				{Name: "streamer", Label: "Streamer", Diff: false, Type: "uint32"},
+				{Name: "filer", Label: "Filer", Diff: false, Type: "uint32"},
+				{Name: "configurator", Label: "Configurator", Diff: false, Type: "uint32"},
+			},
+		},
+	}
+}
+
+// MetricKeyPrefix interface for mackerelplugin
+func (m ChinachuPlugin) MetricKeyPredix() string {
+	if m.Prefix == "" {
+		m.Prefix = "chinachu"
+	}
+	return m.Prefix
 }
 
 func Do() {
+	optPrefix := flag.String("matric-key-prefix", "chinachu", "Metric key prefix")
 	optHost := flag.String("host", "", "chinachu-wui hostname")
 	optPort := flag.String("port", "", "chinachu-wui port")
 	optTempfile := flag.String("tempfile", "", "Temp file name")
@@ -100,6 +143,7 @@ func Do() {
 	var plugin ChinachuPlugin
 
 	plugin.Target = fmt.Sprintf("%s:%s", *optHost, *optPort)
+	plugin.Prefix = *optPrefix
 
 	helper := mp.NewMackerelPlugin(plugin)
 

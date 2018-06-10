@@ -33,15 +33,15 @@ type feature struct {
 }
 
 var graphdef = map[string]mp.Graphs{
-	"chinachu.connected_count": mp.Graphs{
-		Label: "Connected Count",
+	"connected_count": mp.Graphs{
+		Label: "Chinachu - Connected Count",
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
 			{Name: "ConnectedCount", Label: "Count", Diff: false},
 		},
 	},
-	"chinachu.feature": mp.Graphs{
-		Label: "Feature",
+	"feature": mp.Graphs{
+		Label: "Chinachu - Feature",
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
 			{Name: "Previewer", Label: "Previewer", Diff: false},

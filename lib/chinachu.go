@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	// "log"
 	"net/http"
 
 	mp "github.com/mackerelio/go-mackerel-plugin-helper"
-	"github.com/mackerelio/golib/logging"
+	// "github.com/mackerelio/golib/logging"
 )
 
-var logger = logging.GetLogger("metrics.plugin.chinachu")
+// var logger = logging.GetLogger("metrics.plugin.chinachu")
 
 type ChinachuPlugin struct {
 	Prefix   string
@@ -37,17 +38,17 @@ var graphdef = map[string]mp.Graphs{
 		Label: "Connected Count",
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
-			{Name: "ConnectedCount", Label: "Count", Diff: false, Type: "uint32"},
+			{Name: "ConnectedCount", Label: "Count", Diff: false},
 		},
 	},
 	"chinachu.feature": mp.Graphs{
 		Label: "Feature",
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
-			{Name: "Previewer", Label: "Previewer", Diff: false, Type: "uint32"},
-			{Name: "Streamer", Label: "Streamer", Diff: false, Type: "uint32"},
-			{Name: "Filer", Label: "Filer", Diff: false, Type: "uint32"},
-			{Name: "Configurator", Label: "Configurator", Diff: false, Type: "uint32"},
+			{Name: "Previewer", Label: "Previewer", Diff: false},
+			{Name: "Streamer", Label: "Streamer", Diff: false},
+			{Name: "Filer", Label: "Filer", Diff: false},
+			{Name: "Configurator", Label: "Configurator", Diff: false},
 		},
 	},
 }
@@ -93,6 +94,7 @@ func (m ChinachuPlugin) FetchMetrics() (map[string]interface{}, error) {
 	return stat, nil
 }
 
+// Bool2Int bool -> int 1 or 0
 func Bool2Int(x bool) int {
 	if x {
 		return 1
@@ -101,12 +103,12 @@ func Bool2Int(x bool) int {
 }
 
 // GraphDefinition interface for mackerelplugin
-func (m ChinachuPlugin) GraphDefinition() map[string](mp.Graphs) {
+func (m ChinachuPlugin) GraphDefinition() map[string]mp.Graphs {
 	return graphdef
 }
 
 // MetricKeyPrefix interface for mackerelplugin
-func (m ChinachuPlugin) MetricKeyPredix() string {
+func (m ChinachuPlugin) MetricKeyPrefix() string {
 	if m.Prefix == "" {
 		m.Prefix = "chinachu"
 	}

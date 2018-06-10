@@ -8,7 +8,7 @@ import (
 	// "log"
 	"net/http"
 
-	mp "github.com/mackerelio/go-mackerel-plugin-helper"
+	mp "github.com/mackerelio/go-mackerel-plugin"
 	// "github.com/mackerelio/golib/logging"
 )
 
@@ -75,20 +75,20 @@ func GetStatus(host string) (status, error) {
 }
 
 // FetchMetrics interface for mackerelplugin
-func (m ChinachuPlugin) FetchMetrics() (map[string]interface{}, error) {
-	stat := make(map[string]interface{})
+func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
+	stat := make(map[string]float64)
 
 	status, err := GetStatus(m.Target)
 	if err != nil {
 		return nil, err
 	}
 
-	stat["ConnectedCount"] = status.ConnectedCount
+	stat["ConnectedCount"] = float64(status.ConnectedCount)
 
-	stat["Previewer"] = Bool2Int(status.Feature.Previewer)
-	stat["Streamer"] = Bool2Int(status.Feature.Streamer)
-	stat["Filer"] = Bool2Int(status.Feature.Filer)
-	stat["Configurator"] = Bool2Int(status.Feature.Configurator)
+	stat["Previewer"] = float64(Bool2Int(status.Feature.Previewer))
+	stat["Streamer"] = float64(Bool2Int(status.Feature.Streamer))
+	stat["Filer"] = float64(Bool2Int(status.Feature.Filer))
+	stat["Configurator"] = float64(Bool2Int(status.Feature.Configurator))
 
 	return stat, nil
 }

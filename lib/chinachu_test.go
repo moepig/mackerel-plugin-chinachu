@@ -9,12 +9,15 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
-var statsServer *httptest.Server
-var stub string
+var statusServer *httptest.Server
+var stub map[string]string
 
-var jsonStr = `{
+var jsonStr = map[string]string{
+	"status": `{
   "connectedCount": 1,
   "feature": {
 	"previewer": true,
@@ -33,13 +36,94 @@ var jsonStr = `{
     "alive": false,
 	"pid": null
   }
-}`
+}`,
+	"recorded": `[
+  {
+	"id": "36tfa8hbsd",
+	"category": "anime",
+	"title": "test title",
+	"fullTitle": "test title #1 「ほげ」",
+	"detail": "detail",
+	"start":1507390200000, 
+	"end":1507392000000,
+	"seconds":1800, 
+	"description": "detail",
+	"extra": {
+		"番組内容": "ばんぐみないよう",
+		"あらすじ◇": "あらすじ",
+		"出演者": "うんこ太郎"
+	},
+	"channel": {
+	  "type": "GR",
+	  "channel": "16",
+	  "name": "ＴＯＫＹＯ　ＭＸ１",
+	  "id": "1hkhnrs",
+	  "sid": 23608,
+	  "nid": 32391,
+	  "hasLogoData": true,
+	  "n": 32
+	},
+	"subTitle": "ほげ",
+	"episode": 1,
+	"flags": [""],
+	"isConflict": false,
+	"recordedFormat": "",
+	"priority":2, 
+	"tuner": {
+	  "name":"Mirakurun (UnixSocket)",
+	  "command":"*",
+	  "isScrambling":false
+	},
+	"command":"mirakurun type=GR url=/api/programs/323912360850925/stream?decode=1 priority=2",
+	"recorded":"/opt/tv/1.m2ts"
+  },
+  {
+	"id": "36tfa8hbse",
+	"category": "anime",
+	"title": "test title",
+	"fullTitle": "test title #2 「ふが」",
+	"detail": "detail",
+	"start":1507390200001, 
+	"end":1507392000001,
+	"seconds":1800, 
+	"description": "detail",
+	"extra": {
+		"番組内容": "ばんぐみないよう",
+		"あらすじ◇": "あらすじ",
+		"出演者": "うんこ太郎"
+	},
+	"channel": {
+	  "type": "GR",
+	  "channel": "16",
+	  "name": "ＴＯＫＹＯ　ＭＸ１",
+	  "id": "1hkhnrs",
+	  "sid": 23608,
+	  "nid": 32391,
+	  "hasLogoData": true,
+	  "n": 32
+	},
+	"subTitle": "ふが",
+	"episode": 2,
+	"flags": [""],
+	"isConflict": false,
+	"recordedFormat": "",
+	"priority":2,
+	"tuner": {
+	  "name":"Mirakurun (UnixSocket)",
+	  "command":"*",
+	  "isScrambling":false
+	},
+	"command":"mirakurun type=GR url=/api/programs/323912360850925/stream?decode=1 priority=2",
+	"recorded":"/opt/tv/2.m2ts"
+  }
+]`,
+}
 
 func TestGraphDefinition(t *testing.T) {
 	var chinachu ChinachuPlugin
 
 	graphdef := chinachu.GraphDefinition()
-	if len(graphdef) != 2 {
+	if len(graphdef) != 3 {
 		t.Errorf("GetTempfilename: %d should be 2", len(graphdef))
 	}
 }
@@ -51,13 +135,18 @@ func TestMain(m *testing.M) {
 func mainTest(m *testing.M) int {
 	flag.Parse()
 
-	ts := httptest.NewServer(
-		http.HandlerFunc(
+	router := mux.NewRouter()
+	router.HandleFunc(
+		"/api/status.json", http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprintln(w, stub)
+				fmt.Fprintln(w, stub["status"])
 			}))
-	statsServer = ts
-
+	router.HandleFunc(
+		"/api/recorded.json", http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintln(w, stub["recorded"])
+			}))
+	statusServer = httptest.NewServer(router)
 	log.Println("Started a stats server")
 
 	return m.Run()
@@ -69,7 +158,7 @@ func TestFetchMetrics(t *testing.T) {
 
 	// get metrics
 	p := ChinachuPlugin{
-		Target: strings.Replace(statsServer.URL, "http://", "", 1),
+		Target: strings.Replace(statusServer.URL, "http://", "", 1),
 		Prefix: "chianchu",
 	}
 	metrics, err := p.FetchMetrics()
@@ -85,6 +174,7 @@ func TestFetchMetrics(t *testing.T) {
 		"Streamer":       1,
 		"Filer":          1,
 		"Configurator":   1,
+		"RecordedCount":  2,
 	}
 
 	for k, v := range expected {
@@ -101,12 +191,15 @@ func TestFetchMetrics(t *testing.T) {
 
 func TestFetchMetricsFail(t *testing.T) {
 	p := ChinachuPlugin{
-		Target: strings.Replace(statsServer.URL, "http://", "", 1),
+		Target: strings.Replace(statusServer.URL, "http://", "", 1),
 		Prefix: "redash",
 	}
 
 	// return error against an invalid stats json
-	stub = "{feature: [],}"
+	stub = map[string]string{
+		"status":   "{feature: [],}",
+		"recorded": "[]",
+	}
 	_, err := p.FetchMetrics()
 	if err == nil {
 		t.Errorf("FetchMetrics should return error: stub=%v", stub)

@@ -5,14 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	// "log"
 	"net/http"
 
 	mp "github.com/mackerelio/go-mackerel-plugin"
-	// "github.com/mackerelio/golib/logging"
 )
-
-// var logger = logging.GetLogger("metrics.plugin.chinachu")
 
 type ChinachuPlugin struct {
 	Prefix   string
@@ -30,6 +26,10 @@ type feature struct {
 	Streamer     bool
 	Filer        bool
 	Configurator bool
+}
+
+type recorded struct {
+	ID string `json:"id"`
 }
 
 var graphdef = map[string]mp.Graphs{
@@ -50,28 +50,45 @@ var graphdef = map[string]mp.Graphs{
 			{Name: "Configurator", Label: "Configurator", Diff: false},
 		},
 	},
+	"recorded": mp.Graphs{
+		Label: "Chinachu - Recorded",
+		Unit:  "integer",
+		Metrics: []mp.Metrics{
+			{Name: "RecordedCount", Label: "RecordedCount", Diff: false},
+		},
+	},
 }
 
-// GetStatus サーバー情報取得
+// RequestAPI サーバー情報取得
 // https://github.com/Chinachu/Chinachu/wiki/REST-API#-status
-func GetStatus(host string) (status, error) {
-	url := fmt.Sprintf("http://%s/api/status.json", host)
+func requestAPI(host string, path string) ([]byte, error) {
+	url := fmt.Sprintf("http://%s/api/%s.json", host, path)
 
-	var s status
 	response, err := http.Get(url)
-
 	if err != nil {
-		return s, err
+		return nil, err
 	}
 	defer response.Body.Close()
 
-	byteArray, _ := ioutil.ReadAll(response.Body)
+	byteArray, err := ioutil.ReadAll(response.Body)
 
-	if err := json.Unmarshal(byteArray, &s); err != nil {
-		return s, err
-	}
+	return byteArray, err
+}
 
+func GetStatus(host string) (status, error) {
+	var s status
+	byteArray, err := requestAPI(host, "status")
+
+	err = json.Unmarshal(byteArray, &s)
 	return s, err
+}
+
+func GetRecorded(host string) ([]recorded, error) {
+	var r []recorded
+	byteArray, err := requestAPI(host, "recorded")
+
+	err = json.Unmarshal(byteArray, &r)
+	return r, err
 }
 
 // FetchMetrics interface for mackerelplugin
@@ -83,12 +100,19 @@ func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
 		return nil, err
 	}
 
+	recorded, err := GetRecorded(m.Target)
+	if err != nil {
+		return nil, err
+	}
+
 	stat["ConnectedCount"] = float64(status.ConnectedCount)
 
 	stat["Previewer"] = float64(Bool2Int(status.Feature.Previewer))
 	stat["Streamer"] = float64(Bool2Int(status.Feature.Streamer))
 	stat["Filer"] = float64(Bool2Int(status.Feature.Filer))
 	stat["Configurator"] = float64(Bool2Int(status.Feature.Configurator))
+
+	stat["RecordedCount"] = float64(len(recorded))
 
 	return stat, nil
 }

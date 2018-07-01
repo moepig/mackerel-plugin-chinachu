@@ -139,7 +139,7 @@ func (m ChinachuPlugin) MetricKeyPrefix() string {
 }
 
 func Do() {
-	optPrefix := flag.String("matric-key-prefix", "chinachu", "Metric key prefix")
+	optPrefix := flag.String("metric-key-prefix", "chinachu", "Metric key prefix")
 	optHost := flag.String("host", "", "chinachu-wui hostname")
 	optPort := flag.String("port", "", "chinachu-wui port")
 	optTempfile := flag.String("tempfile", "", "Temp file name")

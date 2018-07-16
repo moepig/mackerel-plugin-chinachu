@@ -36,6 +36,14 @@ type recording struct {
 	ID string `json:"id"`
 }
 
+type rules struct {
+	ID string `json:"id"`
+}
+
+type reserves struct {
+	ID string `json:"id"`
+}
+
 var graphdef = map[string]mp.Graphs{
 	"connected_count": mp.Graphs{
 		Label: "Chinachu - Connected Count",
@@ -66,6 +74,20 @@ var graphdef = map[string]mp.Graphs{
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
 			{Name: "RecordingCount", Label: "RecordingCount", Diff: false},
+		},
+	},
+	"rules": mp.Graphs{
+		Label: "Chinachu - Rules",
+		Unit:  "integer",
+		Metrics: []mp.Metrics{
+			{Name: "RulesCount", Label: "RulesCount", Diff: false},
+		},
+	},
+	"reserves": mp.Graphs{
+		Label: "Chinachu - Reserves",
+		Unit:  "integer",
+		Metrics: []mp.Metrics{
+			{Name: "ReservesCount", Label: "ReservesCount", Diff: false},
 		},
 	},
 }
@@ -110,6 +132,22 @@ func GetRecording(host string) ([]recording, error) {
 	return r, err
 }
 
+func GetRules(host string) ([]rules, error) {
+	var r []rules
+	byteArray, err := requestAPI(host, "rules")
+
+	err = json.Unmarshal(byteArray, &r)
+	return r, err
+}
+
+func GetReserves(host string) ([]reserves, error) {
+	var r []reserves
+	byteArray, err := requestAPI(host, "reserves")
+
+	err = json.Unmarshal(byteArray, &r)
+	return r, err
+}
+
 // FetchMetrics interface for mackerelplugin
 func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
 	stat := make(map[string]float64)
@@ -129,6 +167,16 @@ func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
 		return nil, err
 	}
 
+	rules, err := GetRules(m.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	reserves, err := GetReserves(m.Target)
+	if err != nil {
+		return nil, err
+	}
+
 	stat["ConnectedCount"] = float64(status.ConnectedCount)
 
 	stat["Previewer"] = float64(Bool2Int(status.Feature.Previewer))
@@ -137,8 +185,9 @@ func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
 	stat["Configurator"] = float64(Bool2Int(status.Feature.Configurator))
 
 	stat["RecordedCount"] = float64(len(recorded))
-
 	stat["RecordingCount"] = float64(len(recording))
+	stat["RulesCount"] = float64(len(rules))
+	stat["ReservesCount"] = float64(len(reserves))
 
 	return stat, nil
 }

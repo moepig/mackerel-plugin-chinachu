@@ -119,52 +119,129 @@ var jsonStr = map[string]string{
 	"recording": `[
 {
 	"id": "36tfa8h0oi",
-		"category": "anime",
-		"title": "たいとる",
-		"fullTitle": "ふるたい",
-		"detail": "あらすじ出演者",
-		"start": 1531666800000,
-		"end": 1531668600000,
-		"seconds": 1800,
-		"description": "",
-		"extra": {
-			"あらすじ◇": "あらすじ\r\n",
-			"出演者": "ああああ"
-		},
-		"channel": {
+	"category": "anime",
+	"title": "たいとる",
+	"fullTitle": "ふるたい",
+	"detail": "あらすじ出演者",
+	"start": 1531666800000,
+	"end": 1531668600000,
+	"seconds": 1800,
+	"description": "",
+	"extra": {
+		"あらすじ◇": "あらすじ\r\n",
+		"出演者": "ああああ"
+	},
+	"channel": {
+		"type": "GR",
+		"channel": "16",
+		"name": "ＴＯＫＹＯ　ＭＸ１",
+		"id": "1hkhnrs",
+		"sid": 23608,
+		"nid": 32391,
+		"hasLogoData": true,
+		"n": 32
+	},
+	"subTitle": "さぶたい",
+	"episode": 3,
+	"flags": [],
+	"isConflict": false,
+	"recordedFormat": "",
+	"priority": 2,
+	"tuner": {
+		"name": "Mirakurun (UnixSocket)",
+		"command": "*",
+		"isScrambling": false
+	},
+	"command": "mirakurun type=GR url=/api/programs/323912360836530/stream?decode=1 priority=2",
+	"pid": -1,
+	"recorded": "/opt/tv/1.m2ts"
+}]`,
+	"rules": `
+[{
+	"types": [
+		"GR"
+	],
+	"categories": [
+		"anime"
+	],
+	"channels": [
+		"1hkhnrs"
+	],
+	"ignore_flags": [
+		"再"
+	],
+	"hour": {
+		"start": 0,
+		"end": 24
+	},
+	"reserve_titles": [
+		"たいとるの部分"
+	],
+	"recorded_format": ""
+},
+{
+	"types": [
+		"GR"
+	],
+	"categories": [
+		"anime"
+	],
+	"channels": [
+		"1hkhnrs"
+	],
+	"ignore_flags": [
+		"再"
+	],
+	"hour": {
+		"start": 0,
+		"end": 24
+	},
+	"reserve_titles": [
+		"たいとるの部分"
+	],
+	"recorded_format": ""
+}]`,
+	"reserves": `
+[{
+	"id": "3826py3vi7",
+	"category": "anime",
+	"title": "たいとる",
+	"fullTitle": "ふるたい",
+	"detail": "しょうさい",
+	"start": 1531731300000,
+	"end": 1531733100000,
+	"seconds": 1800,
+	"description": "せつめい",
+	"extra": {
+			"製作": "おれ",
+			"ホームページ": "https://example.com"
+	},
+	"channel": {
 			"type": "GR",
-			"channel": "16",
-			"name": "ＴＯＫＹＯ　ＭＸ１",
-			"id": "1hkhnrs",
-			"sid": 23608,
-			"nid": 32391,
+			"channel": "23",
+			"name": "テレビ東京１",
+			"id": "1i5dhps",
+			"sid": 1072,
+			"nid": 32742,
 			"hasLogoData": true,
-			"n": 32
-		},
-		"subTitle": "さぶたい",
-		"episode": 3,
-		"flags": [],
-		"isConflict": false,
-		"recordedFormat": "",
-		"priority": 2,
-		"tuner": {
-			"name": "Mirakurun (UnixSocket)",
-			"command": "*",
-			"isScrambling": false
-		},
-		"command": "mirakurun type=GR url=/api/programs/323912360836530/stream?decode=1 priority=2",
-		"pid": -1,
-		"recorded": "/opt/tv/1.m2ts"
-	}
-]`,
+			"n": 25
+	},
+	"subTitle": "さぶたい",
+	"episode": null,
+	"flags": [
+			"字"
+	],
+	"isConflict": false,
+	"recordedFormat": ""
+}]`,
 }
 
 func TestGraphDefinition(t *testing.T) {
 	var chinachu ChinachuPlugin
 
 	graphdef := chinachu.GraphDefinition()
-	if len(graphdef) != 4 {
-		t.Errorf("Graph Length: %d should be 4", len(graphdef))
+	if len(graphdef) != 6 {
+		t.Errorf("Graph Length: %d should be 6", len(graphdef))
 	}
 }
 
@@ -190,6 +267,16 @@ func mainTest(m *testing.M) int {
 		"/api/recording.json", http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintln(w, stub["recording"])
+			}))
+	router.HandleFunc(
+		"/api/rules.json", http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintln(w, stub["rules"])
+			}))
+	router.HandleFunc(
+		"/api/reserves.json", http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintln(w, stub["reserves"])
 			}))
 	statusServer = httptest.NewServer(router)
 	log.Println("Started a stats server")
@@ -221,6 +308,8 @@ func TestFetchMetrics(t *testing.T) {
 		"Configurator":   1,
 		"RecordedCount":  2,
 		"RecordingCount": 1,
+		"RulesCount":     2,
+		"ReservesCount":  1,
 	}
 
 	for k, v := range expected {

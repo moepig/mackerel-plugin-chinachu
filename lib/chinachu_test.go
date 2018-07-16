@@ -18,35 +18,35 @@ var stub map[string]string
 
 var jsonStr = map[string]string{
 	"status": `{
-  "connectedCount": 1,
-  "feature": {
-	"previewer": true,
-    "streamer": true,
-    "filer": true,
-	"configurator": true
-  },
-  "system": {
-    "core": 4
-  },
-  "operator": {
-    "alive": true,
-    "pid": 1122
-  },
-  "wui": {
-    "alive": false,
-	"pid": null
-  }
+	"connectedCount": 1,
+		"feature": {
+		"previewer": true,
+			"streamer": true,
+			"filer": true,
+		"configurator": true
+	},
+	"system": {
+		"core": 4
+	},
+	"operator": {
+		"alive": true,
+		"pid": 1122
+	},
+	"wui": {
+		"alive": false,
+ 		"pid": null
+	}
 }`,
 	"recorded": `[
-  {
+{
 	"id": "36tfa8hbsd",
 	"category": "anime",
 	"title": "test title",
 	"fullTitle": "test title #1 「ほげ」",
 	"detail": "detail",
-	"start":1507390200000, 
+	"start":1507390200000,
 	"end":1507392000000,
-	"seconds":1800, 
+	"seconds":1800,
 	"description": "detail",
 	"extra": {
 		"番組内容": "ばんぐみないよう",
@@ -54,38 +54,38 @@ var jsonStr = map[string]string{
 		"出演者": "うんこ太郎"
 	},
 	"channel": {
-	  "type": "GR",
-	  "channel": "16",
-	  "name": "ＴＯＫＹＯ　ＭＸ１",
-	  "id": "1hkhnrs",
-	  "sid": 23608,
-	  "nid": 32391,
-	  "hasLogoData": true,
-	  "n": 32
+		"type": "GR",
+		"channel": "16",
+		"name": "ＴＯＫＹＯ　ＭＸ１",
+		"id": "1hkhnrs",
+		"sid": 23608,
+		"nid": 32391,
+		"hasLogoData": true,
+		"n": 32
 	},
 	"subTitle": "ほげ",
 	"episode": 1,
 	"flags": [""],
 	"isConflict": false,
 	"recordedFormat": "",
-	"priority":2, 
+	"priority":2,
 	"tuner": {
-	  "name":"Mirakurun (UnixSocket)",
-	  "command":"*",
-	  "isScrambling":false
+		"name":"Mirakurun (UnixSocket)",
+		"command":"*",
+		"isScrambling":false
 	},
 	"command":"mirakurun type=GR url=/api/programs/323912360850925/stream?decode=1 priority=2",
 	"recorded":"/opt/tv/1.m2ts"
-  },
-  {
+},
+{
 	"id": "36tfa8hbse",
 	"category": "anime",
 	"title": "test title",
 	"fullTitle": "test title #2 「ふが」",
 	"detail": "detail",
-	"start":1507390200001, 
+	"start":1507390200001,
 	"end":1507392000001,
-	"seconds":1800, 
+	"seconds":1800,
 	"description": "detail",
 	"extra": {
 		"番組内容": "ばんぐみないよう",
@@ -93,14 +93,14 @@ var jsonStr = map[string]string{
 		"出演者": "うんこ太郎"
 	},
 	"channel": {
-	  "type": "GR",
-	  "channel": "16",
-	  "name": "ＴＯＫＹＯ　ＭＸ１",
-	  "id": "1hkhnrs",
-	  "sid": 23608,
-	  "nid": 32391,
-	  "hasLogoData": true,
-	  "n": 32
+		"type": "GR",
+		"channel": "16",
+		"name": "ＴＯＫＹＯ　ＭＸ１",
+		"id": "1hkhnrs",
+		"sid": 23608,
+		"nid": 32391,
+		"hasLogoData": true,
+		"n": 32
 	},
 	"subTitle": "ふが",
 	"episode": 2,
@@ -109,13 +109,53 @@ var jsonStr = map[string]string{
 	"recordedFormat": "",
 	"priority":2,
 	"tuner": {
-	  "name":"Mirakurun (UnixSocket)",
-	  "command":"*",
-	  "isScrambling":false
+		"name":"Mirakurun (UnixSocket)",
+		"command":"*",
+		"isScrambling":false
 	},
 	"command":"mirakurun type=GR url=/api/programs/323912360850925/stream?decode=1 priority=2",
 	"recorded":"/opt/tv/2.m2ts"
-  }
+}]`,
+	"recording": `[
+{
+	"id": "36tfa8h0oi",
+		"category": "anime",
+		"title": "たいとる",
+		"fullTitle": "ふるたい",
+		"detail": "あらすじ出演者",
+		"start": 1531666800000,
+		"end": 1531668600000,
+		"seconds": 1800,
+		"description": "",
+		"extra": {
+			"あらすじ◇": "あらすじ\r\n",
+			"出演者": "ああああ"
+		},
+		"channel": {
+			"type": "GR",
+			"channel": "16",
+			"name": "ＴＯＫＹＯ　ＭＸ１",
+			"id": "1hkhnrs",
+			"sid": 23608,
+			"nid": 32391,
+			"hasLogoData": true,
+			"n": 32
+		},
+		"subTitle": "さぶたい",
+		"episode": 3,
+		"flags": [],
+		"isConflict": false,
+		"recordedFormat": "",
+		"priority": 2,
+		"tuner": {
+			"name": "Mirakurun (UnixSocket)",
+			"command": "*",
+			"isScrambling": false
+		},
+		"command": "mirakurun type=GR url=/api/programs/323912360836530/stream?decode=1 priority=2",
+		"pid": -1,
+		"recorded": "/opt/tv/1.m2ts"
+	}
 ]`,
 }
 
@@ -123,8 +163,8 @@ func TestGraphDefinition(t *testing.T) {
 	var chinachu ChinachuPlugin
 
 	graphdef := chinachu.GraphDefinition()
-	if len(graphdef) != 3 {
-		t.Errorf("GetTempfilename: %d should be 2", len(graphdef))
+	if len(graphdef) != 4 {
+		t.Errorf("Graph Length: %d should be 4", len(graphdef))
 	}
 }
 
@@ -145,6 +185,11 @@ func mainTest(m *testing.M) int {
 		"/api/recorded.json", http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintln(w, stub["recorded"])
+			}))
+	router.HandleFunc(
+		"/api/recording.json", http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintln(w, stub["recording"])
 			}))
 	statusServer = httptest.NewServer(router)
 	log.Println("Started a stats server")
@@ -175,6 +220,7 @@ func TestFetchMetrics(t *testing.T) {
 		"Filer":          1,
 		"Configurator":   1,
 		"RecordedCount":  2,
+		"RecordingCount": 1,
 	}
 
 	for k, v := range expected {

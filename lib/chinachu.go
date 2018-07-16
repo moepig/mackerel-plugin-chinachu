@@ -32,6 +32,10 @@ type recorded struct {
 	ID string `json:"id"`
 }
 
+type recording struct {
+	ID string `json:"id"`
+}
+
 var graphdef = map[string]mp.Graphs{
 	"connected_count": mp.Graphs{
 		Label: "Chinachu - Connected Count",
@@ -55,6 +59,13 @@ var graphdef = map[string]mp.Graphs{
 		Unit:  "integer",
 		Metrics: []mp.Metrics{
 			{Name: "RecordedCount", Label: "RecordedCount", Diff: false},
+		},
+	},
+	"recording": mp.Graphs{
+		Label: "Chinachu - Recording",
+		Unit:  "integer",
+		Metrics: []mp.Metrics{
+			{Name: "RecordingCount", Label: "RecordingCount", Diff: false},
 		},
 	},
 }
@@ -91,6 +102,14 @@ func GetRecorded(host string) ([]recorded, error) {
 	return r, err
 }
 
+func GetRecording(host string) ([]recording, error) {
+	var r []recording
+	byteArray, err := requestAPI(host, "recording")
+
+	err = json.Unmarshal(byteArray, &r)
+	return r, err
+}
+
 // FetchMetrics interface for mackerelplugin
 func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
 	stat := make(map[string]float64)
@@ -105,6 +124,11 @@ func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
 		return nil, err
 	}
 
+	recording, err := GetRecording(m.Target)
+	if err != nil {
+		return nil, err
+	}
+
 	stat["ConnectedCount"] = float64(status.ConnectedCount)
 
 	stat["Previewer"] = float64(Bool2Int(status.Feature.Previewer))
@@ -113,6 +137,8 @@ func (m ChinachuPlugin) FetchMetrics() (map[string]float64, error) {
 	stat["Configurator"] = float64(Bool2Int(status.Feature.Configurator))
 
 	stat["RecordedCount"] = float64(len(recorded))
+
+	stat["RecordingCount"] = float64(len(recording))
 
 	return stat, nil
 }
